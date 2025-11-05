@@ -1,0 +1,27 @@
+name: azure-eats-env
+channels:
+  - defaults
+  - conda-forge
+
+dependencies:
+  # Core Python
+  - python=3.10
+  - pip
+
+  # Azure SDKs (for Table, Blob, and Queue Storage)
+  - pip:
+      - azure-data-tables
+      - azure-storage-blob
+      - azure-storage-queue
+      - azure-identity
+
+      # Utilities and helpers
+      - requests
+      - pandas
+      - numpy
+      - faker             # for generating fake restaurant & meal data
+      - jinja2            # optional: templating if you generate JSON payloads
+      - python-dotenv     # for reading connection strings from .env
+      - azure-functions   # useful for local function testing
+      - tqdm              # progress bars if you inject large datasets
+      - pytest            # for testing your code
