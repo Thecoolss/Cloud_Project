@@ -536,6 +536,9 @@ class CustomerOrderSystem {
             showMessage(`Order failed: ${error.message}`, 'error');
             console.error('Order submission error:', error);
             
+            // Show error notification
+            this.showErrorNotification(error.message);
+            
             // Re-enable submit button
             if (this.elements.submitOrderBtn) {
                 this.elements.submitOrderBtn.disabled = false;
@@ -559,6 +562,94 @@ class CustomerOrderSystem {
         if (this.elements.confirmationModal) {
             this.elements.confirmationModal.style.display = 'flex';
         }
+        
+        // Show notification
+        this.showOrderNotification(orderResult);
+    }
+
+    showOrderNotification(orderResult) {
+        // Show browser notification if permitted
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Order Placed! 🎉', {
+                body: `Your order #${orderResult.orderNumber} has been sent. Delivery in ~${orderResult.deliveryTime || '30'} minutes.`,
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🍔</text></svg>'
+            });
+        }
+        
+        // Show toast notification on page
+        this.showToast(`✓ Order #${orderResult.orderNumber} placed successfully!`);
+    }
+
+    showToast(message) {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = 'order-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            animation: slideInUp 0.3s ease-out;
+            font-weight: 500;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+            toast.style.animation = 'slideOutDown 0.3s ease-in';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    showErrorNotification(errorMessage) {
+        // Show browser notification for error
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Order Failed ❌', {
+                body: errorMessage || 'There was an error placing your order. Please try again.',
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">❌</text></svg>'
+            });
+        }
+        
+        // Show error toast notification on page
+        this.showErrorToast(`✗ Order failed: ${errorMessage || 'Please try again'}`);
+    }
+
+    showErrorToast(message) {
+        // Create error toast element
+        const toast = document.createElement('div');
+        toast.className = 'error-toast';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            animation: slideInUp 0.3s ease-out;
+            font-weight: 500;
+            max-width: 300px;
+            border-left: 4px solid #fff;
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Remove after 5 seconds (slightly longer for errors)
+        setTimeout(() => {
+            toast.style.animation = 'slideOutDown 0.3s ease-in';
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
     }
 
     resetOrder() {
@@ -664,5 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if we're on the customer page
     if (document.getElementById('findMealsBtn')) {
         window.customerSystem = new CustomerOrderSystem();
+        
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     }
 });
