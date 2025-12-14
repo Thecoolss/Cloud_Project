@@ -371,6 +371,9 @@ class CustomerOrderSystem {
         // Update cart items display
         this.updateCartItems();
         
+        // Update estimated delivery time in cart footer
+        this.updateCartDeliveryTime();
+        
         // Enable/disable checkout button
         if (this.elements.checkoutBtn) {
             this.elements.checkoutBtn.disabled = this.cart.length === 0;
@@ -380,6 +383,40 @@ class CustomerOrderSystem {
         if (this.elements.cartSummary && this.elements.mealsSection.style.display !== 'none') {
             this.elements.cartSummary.style.display = this.cart.length > 0 ? 'flex' : 'none';
         }
+    }
+    
+    updateCartDeliveryTime() {
+        // Find or create delivery time element in cart footer
+        const cartFooter = document.querySelector('.cart-footer');
+        if (!cartFooter) return;
+        
+        let deliveryTimeEl = document.getElementById('cartEstimatedTime');
+        
+        if (this.cart.length === 0) {
+            // Remove delivery time if cart is empty
+            if (deliveryTimeEl) deliveryTimeEl.remove();
+            return;
+        }
+        
+        const estimatedTime = this.calculateEstimatedDeliveryTime();
+        
+        if (!deliveryTimeEl) {
+            // Create new element if it doesn't exist
+            deliveryTimeEl = document.createElement('div');
+            deliveryTimeEl.id = 'cartEstimatedTime';
+            deliveryTimeEl.className = 'cart-delivery-time';
+            
+            // Insert before the checkout button
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (checkoutBtn) {
+                cartFooter.insertBefore(deliveryTimeEl, checkoutBtn);
+            }
+        }
+        
+        deliveryTimeEl.innerHTML = `
+            <i class="fas fa-clock"></i>
+            <span>Estimated Delivery: <strong>${estimatedTime} minutes</strong></span>
+        `;
     }
 
     updateCartItems() {
@@ -481,15 +518,42 @@ class CustomerOrderSystem {
         const deliveryFee = 2.99;
         const total = subtotal + deliveryFee;
         
+        // Calculate estimated delivery time
+        const estimatedTime = this.calculateEstimatedDeliveryTime();
+        
         this.elements.orderSummary.innerHTML = `
             ${orderItems}
             <div class="order-item">
                 <span>Delivery Fee</span>
                 <span>$${deliveryFee.toFixed(2)}</span>
             </div>
+            <div class="order-item estimated-time">
+                <span><i class="fas fa-clock"></i> Estimated Delivery Time</span>
+                <span><strong>${estimatedTime} minutes</strong></span>
+            </div>
         `;
         
         this.elements.orderTotal.textContent = `$${total.toFixed(2)}`;
+    }
+    
+    calculateEstimatedDeliveryTime() {
+        // Get total preparation time from cart items
+        let totalPrepTime = 0;
+        
+        this.cart.forEach(cartItem => {
+            const meal = this.currentMeals.find(m => m.id === cartItem.id);
+            if (meal && meal.preparationTime) {
+                totalPrepTime += meal.preparationTime * cartItem.quantity;
+            }
+        });
+        
+        // Add fixed times as per rubric:
+        // Estimated Time = sum(preparation times) + fixed pickup time + fixed delivery time
+        const fixedPickupTime = 10;  // minutes
+        const fixedDeliveryTime = 20; // minutes
+        const totalEstimatedTime = totalPrepTime + fixedPickupTime + fixedDeliveryTime;
+        
+        return totalEstimatedTime;
     }
 
     async submitOrder(e) {
