@@ -1,0 +1,12 @@
+{
+  "scriptFile": "notifyorder.py",
+  "bindings": [
+    {
+      "name": "msg",
+      "type": "queueTrigger",
+      "direction": "in",
+      "queueName": "order-notifications",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}
