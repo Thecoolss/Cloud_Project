@@ -1,119 +1,171 @@
-# Cloud Project – Food Ordering on Azure
+# FoodExpress - Serverless Multi-Restaurant Food Ordering Platform
 
-End-to-end food ordering prototype built on Azure Functions with Table Storage, Queues, Blob Storage helpers, and Notification Hubs. The backend is a set of Python Azure Functions; the frontend is a static HTML/JS client that calls the APIs.
+A cloud-based food ordering platform built with Microsoft Azure services, enabling restaurants to register meals and customers to browse and order food in their delivery area.
 
-## Architecture Overview
-- **Azure Functions (Python)** – HTTP triggers for meals and orders; queue trigger for delayed notifications.
-- **Azure Storage Account**
-  - **Table Storage**: `Restaurants`, `Meals`, `Orders` tables hold all business data.
-  - **Queue Storage**: `invalid-orders` captures bad requests; `order-notifications` drives delayed user notifications.
-  - **Blob Storage** (scripts): used by helper scripts to host meal images.
-- **Azure Notification Hubs** – Broadcast push/templated notifications to clients seconds after an order is placed.
-- **Static Frontend** – `/frontend` HTML/CSS/JS calling the Functions endpoints (`/api/...`).
+## 🚀 Project Overview
 
-## Backend Functions
+FoodExpress is a simplified Uber Eats-like platform that demonstrates serverless architecture using Azure Functions and Azure Storage services. The platform supports two-sided interaction between restaurants (who register meals) and customers (who browse and order meals).
 
-### registerMeal (HTTP trigger) – `POST /api/registerMeal`
-- Validates required fields (`name`, `description`, `price`, `preparationTime`, `deliveryAreas`, `restaurantName`).
-- Writes a meal entity to the `Meals` table (PartitionKey = restaurantId, RowKey = mealId).
-- Generates a restaurantId if not provided; normalizes delivery areas and stores a primary area for querying.
+## 📋 Features
 
-### getMeals (HTTP trigger) – `GET /api/meals?area=Central`
-- Requires `area` query param.
-- Queries `Meals` by `DeliveryArea` and `IsAvailable=true`.
-- Returns meal metadata, pricing, prep time, and optional blob path/image URL.
+### For Restaurants
+- Register new meals with details (name, description, price, preparation time)
+- Set delivery areas for each meal
+- Categorize meals and mark dietary preferences
 
-### submitOrder (HTTP trigger) – `POST /api/submitOrder`
-- Validates required fields (`customerName`, `deliveryAddress`, `area`, `meals`); empties are treated as missing.
-- If invalid, sends the payload + reason to the `invalid-orders` queue and returns 400.
-- Looks up each requested meal in `Meals`, aggregates totals, and creates an `Orders` entity:
-  - PartitionKey = area; RowKey = orderId; stores customer info, meals JSON, totals, prep estimate, and restaurants.
-- Enqueues an `order-notifications` message with a 15s visibility delay so a separate function can notify the user that the order is “Preparing”.
+### For Customers
+- Select delivery area from dropdown
+- Browse available meals in their area
+- Add multiple meals to cart with quantity controls
+- **Real-time estimated delivery time calculation**
+- View order confirmation with delivery estimates
+- Responsive design for mobile and desktop
 
-### notifyorder (Queue trigger) – `order-notifications`
-- Triggered by messages from `order-notifications` queue.
-- Builds a SAS token from Notification Hub credentials and calls the Notification Hubs REST API.
-- Sends a templated/broadcast notification: “Your order {orderNumber} is being prepared.”
+### Key Functionality: Estimated Delivery Time ⏰
 
-## Data Model (Azure Table Storage)
-- **Restaurants**: PartitionKey = delivery area; RowKey = restaurantId. Metadata: name, cuisine, address, phone, delivery fee, rating, etc.
-- **Meals**: PartitionKey = restaurantId; RowKey = mealId. Fields: name, description, price, prep time, category, availability, calories, delivery area, restaurant metadata, image URL/blob path.
-- **Orders**: PartitionKey = area; RowKey = orderId. Fields: customer info, meals (JSON array), totals, preparation/delivery estimates, status, order number, restaurant IDs.
+The platform calculates estimated delivery time using the rubric formula:
 
-## Queues and Message Shapes
-- **invalid-orders** (from `submitOrder` on validation failure)  
-  ```json
-  {
-    "id": "<uuid>",
-    "reason": "Missing required fields: area, meals",
-    "orderData": { ...original payload... },
-    "timestamp": "2025-12-14T15:00:00Z"
-  }
-  ```
-- **order-notifications** (from `submitOrder` on success; 15s delayed visibility)  
-  ```json
-  {
-    "orderId": "...",
-    "orderNumber": "ORD-20251214-ABC123",
-    "customerName": "...",
-    "area": "Central",
-    "status": "Preparing",
-    "message": "Your order ORD-20251214-ABC123 is being prepared.",
-    "timestamp": "2025-12-14T15:00:00Z"
-  }
-  ```
+```
+Estimated Time = sum(preparation times) + fixed pickup time (10 min) + fixed delivery time (20 min)
+```
 
-## Notification Hubs Integration
-- Uses REST API (no SDK) with a SAS token derived from the Notification Hub connection string and hub name.
-- Environment variables:
-  - `AZURE_NOTIFICATION_HUB_CONNECTION_STRING`
-  - `AZURE_NOTIFICATION_HUB_NAME`
-- `notifyorder` broadcasts a templated payload (`ServiceBusNotification-Format: template`) to all registered devices.
+**Where it's displayed:**
+1. **Cart Sidebar** - Shows estimated time as items are added
+2. **Checkout Modal** - Displays estimate before order submission
+3. **Order Confirmation** - Final delivery estimate after order placement
 
-## Helper Scripts (backend/databases)
-- **dgenerate.py** – Seeds Table Storage with realistic `Restaurants` and `Meals` (uses Faker). Creates tables if missing.
-- **blobl.py** – Uploads food images to Blob Storage containers and annotates meals with image URLs/blob paths.
-- **verify_data.py / verify_db1.py** – Quick verification scripts to inspect seeded data and image availability.
+The calculation accounts for:
+- Individual meal preparation times (multiplied by quantity)
+- Fixed pickup time at restaurant (10 minutes)
+- Fixed delivery travel time (20 minutes)
 
-## Frontend (static)
-- Located in `/frontend` with HTML, CSS, and JS:
-  - `js/api.js` defines API helpers.
-  - `js/customer.js` and `js/restaurant.js` drive customer and restaurant flows.
-  - `restaurant.html` is a sample UI; it calls the Functions endpoints exposed at `/api/...`.
-- The frontend assumes CORS is allowed (`Host` settings and Function handlers send `Access-Control-Allow-Origin: *`).
+## 🛠️ Technology Stack
 
-## Configuration
-- See `backend/local.settings.json.example` for all required settings:
-  - `AzureWebJobsStorage` / `AzureStorageConnectionString`: Storage account for Tables/Queues/Blobs.
-  - `FUNCTIONS_WORKER_RUNTIME`: `python`.
-  - `AZURE_NOTIFICATION_HUB_CONNECTION_STRING` and `AZURE_NOTIFICATION_HUB_NAME`: needed to send notifications.
-- Queues are auto-created by the code (`invalid-orders`, `order-notifications`).
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | HTML5, CSS3, JavaScript (ES6+) |
+| **Deployment** | GitHub Pages |
+| **Backend** | Azure Functions (Python) |
+| **Storage** | Azure Table Storage |
+| **Advanced** | Azure Queue Storage (for invalid orders) |
 
-## API Summary
-- `POST /api/registerMeal` – Add a meal for a restaurant.
-- `GET /api/meals?area=<area>` – List meals available in an area.
-- `POST /api/submitOrder` – Place an order; stores it in Table Storage and schedules a notification.
+## 📁 Project Structure
 
-## Local Development
-1. **Prerequisites**: Python 3.10+ and Azure Functions Core Tools if you want to run the host locally.
-2. **Install deps**: `cd backend && pip install -r requirements.txt`.
-3. **Configure**: Copy `backend/local.settings.json.example` to `backend/local.settings.json` and fill in your values (Storage + Notification Hub).
-4. **Run**: From `backend`, `func start` to run all Functions locally.
-5. **Test**:
-   - Register a meal: `curl -X POST http://localhost:7071/api/registerMeal ...`
-   - List meals: `curl "http://localhost:7071/api/meals?area=Central"`
-   - Submit an order: `curl -X POST http://localhost:7071/api/submitOrder ...`
-   - Inspect queues (`invalid-orders`, `order-notifications`) via Azure Storage Explorer or the Azure Portal.
+```
+Cloud_Project/
+├── frontend/
+│   ├── index.html              # Customer page
+│   ├── restaurant.html         # Restaurant page
+│   ├── css/
+│   │   └── style.css          # All styling
+│   └── js/
+│       ├── api.js             # API communication layer
+│       ├── customer.js        # Customer functionality
+│       └── restaurant.js      # Restaurant functionality
+├── backend/
+│   ├── getmeal/
+│   │   ├── function.json
+│   │   └── getmeals.py        # Get meals by area
+│   ├── registermeal/
+│   │   ├── function.json
+│   │   └── registermeal.py    # Register new meals
+│   ├── submitorder/
+│   │   ├── function.json
+│   │   └── submitorder.py     # Submit customer orders (with time calc)
+│   ├── databases/
+│   │   └── dgenerate.py       # Data generation script
+│   ├── host.json
+│   └── requirements.txt
+└── README.md
+```
 
-## Cloud Deployment Notes
-- Deploy the Function App with your Storage connection string in `AzureWebJobsStorage`.
-- Ensure the Storage account has Table and Queue services enabled.
-- Provision Notification Hubs and set `AZURE_NOTIFICATION_HUB_CONNECTION_STRING` and `AZURE_NOTIFICATION_HUB_NAME`.
-- Frontend can be hosted as static files (Storage static website, Static Web Apps, or any web host) and pointed at the Function App URL.
+## 🔧 Setup & Deployment
 
-## Operational Considerations
-- **Validation**: Invalid orders are never lost—they’re written to `invalid-orders` for inspection.
-- **Retries**: Queue-triggered `notifyorder` will retry on failure; poison queue can capture problematic messages.
-- **CORS**: Handled in each HTTP function for `OPTIONS` and responses.
-- **Images**: If using `blobl.py`, ensure Blob containers exist and are publicly readable for images (or adjust SAS/ACLs).
+### Prerequisites
+- Azure subscription
+- Azure Functions Core Tools
+- Python 3.9+
+- GitHub account
 
+### Backend Setup
+1. Create Azure Storage Account
+2. Create Azure Functions App
+3. Configure connection strings in Azure
+4. Deploy functions using Azure CLI or VS Code
+
+### Frontend Setup
+1. Update `frontend/js/api.js` with your Azure Functions URL
+2. Deploy to GitHub Pages
+3. Enable CORS in Azure Functions
+
+### Environment Variables
+Required in Azure Functions:
+- `AzureStorageConnectionString` or `AzureWebJobsStorage`
+
+## 📊 Data Requirements
+
+The platform supports:
+- **Minimum 3 delivery areas**: Central, North, South, East, West
+- **10+ restaurants per area** (30+ total)
+- Meal data includes: name, description, price, preparation time, category
+
+## 🌐 Live Deployment
+
+**GitHub Pages URL**: [Add your GitHub Pages URL here]
+
+## 👥 Team Information
+
+Member 1 - Amit Mayer: 16% - worked on the azure functions and assisted on the web's backend
+Member 2 - Matheus Funabashi: 16% - worked on the azure functions and assisted on the web's backend
+Member 3 - Sami Droubi: 20% - implemented azure functions into the backend and connected the azure tables to the orders recorded
+Member 4 - Hadi: 16% - worked on the frontend and presentation of the project
+Member 5: Ralph de Catalan: 16% - worked on the frontend and presentation of the project
+Member 6: Ruben Penning: 16% - worked on the backend (registering orders, registering new meals)
+
+## 📝 API Endpoints
+
+### Get Meals
+```
+GET /api/meals?area={area}
+Returns: List of available meals in specified area
+```
+
+### Register Meal
+```
+POST /api/registerMeal
+Body: { name, description, price, preparationTime, deliveryAreas, ... }
+Returns: Created meal with ID
+```
+
+### Submit Order
+```
+POST /api/submitOrder
+Body: { customerName, deliveryAddress, area, meals, ... }
+Returns: Order confirmation with estimated delivery time
+```
+
+## 🎨 Design Features
+
+- Modern gradient UI with purple theme
+- Responsive design for all screen sizes
+- Real-time cart updates
+- Smooth animations and transitions
+- Toast notifications for user feedback
+- Modal-based checkout flow
+
+## 📈 Future Enhancements
+
+- Variable delivery times based on restaurant distance
+- Order tracking and status updates
+- Restaurant dashboard for managing meals
+- Customer order history
+- Payment integration
+- Real-time notifications
+
+## 📄 License
+
+This project is created for educational purposes as part of Fall 2025 Cloud Computing course.
+
+---
+
+**Powered by Azure Functions & Azure Storage** ☁️

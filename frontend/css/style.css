@@ -460,6 +460,29 @@ body {
     border-top: 1px solid var(--border);
 }
 
+.cart-delivery-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.cart-delivery-time i {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.cart-delivery-time strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 .empty-cart {
     text-align: center;
     padding: 3rem 1rem;
@@ -576,6 +599,64 @@ body {
 
 .modal-body {
     padding: 1.5rem;
+}
+
+.order-summary {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    margin: 1.5rem 0;
+}
+
+.order-summary h3 {
+    color: var(--dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-item.estimated-time {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    margin-top: 10px;
+    border-bottom: none;
+}
+
+.order-item.estimated-time i {
+    color: var(--primary);
+    margin-right: 5px;
+}
+
+.order-item.estimated-time strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid var(--primary);
+    color: var(--primary);
 }
 
 /* ===== FORMS ===== */
@@ -1022,31 +1103,4 @@ body {
         width: 50px;
         height: 50px;
     }
-}
-
-/* ===== TOAST NOTIFICATIONS ===== */
-@keyframes slideInUp {
-    from {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutDown {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(100%);
-        opacity: 0;
-    }
-}
-
-.order-toast {
-    animation: slideInUp 0.3s ease-out;
 }

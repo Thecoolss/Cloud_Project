@@ -3,67 +3,9 @@ import json
 import azure.functions as func
 from azure.data.tables import TableServiceClient
 from azure.storage.queue import QueueClient
-from azure.core.exceptions import ResourceExistsError
 from datetime import datetime
 import uuid
 import os
-
-
-def _get_storage_connection_string() -> str:
-    """
-    Retrieve the storage connection string from configuration.
-    """
-    connection_string = os.getenv('AzureWebJobsStorage') or os.getenv('AzureStorageConnectionString')
-    if not connection_string:
-        raise RuntimeError("Storage connection string is not configured.")
-    return connection_string
-
-
-def _ensure_queue(queue_name: str, connection_string: str) -> QueueClient:
-    """
-    Get a QueueClient and create the queue if it does not exist.
-    """
-    queue_client = QueueClient.from_connection_string(connection_string, queue_name=queue_name)
-    try:
-        queue_client.create_queue()
-    except ResourceExistsError:
-        pass
-    return queue_client
-
-
-def _send_invalid_order(reason: str, order_payload: dict) -> None:
-    """
-    Send invalid requests to the dedicated queue for later inspection.
-    """
-    try:
-        connection_string = _get_storage_connection_string()
-        queue_client = _ensure_queue("invalid-orders", connection_string)
-        queue_client.send_message(json.dumps({
-            'id': str(uuid.uuid4()),
-            'reason': reason,
-            'orderData': order_payload,
-            'timestamp': datetime.utcnow().isoformat()
-        }))
-        logging.info("Sent invalid order to queue: %s", reason)
-    except Exception as queue_error:
-        logging.error("Failed to record invalid order: %s", queue_error)
-
-
-def _enqueue_preparing_notification(order_payload: dict) -> None:
-    """
-    Enqueue a notification for the order with a 15 second delay so a queue-triggered
-    function can notify the user via Azure Notification Hubs.
-    """
-    try:
-        connection_string = _get_storage_connection_string()
-        queue_client = _ensure_queue("order-notifications", connection_string)
-        queue_client.send_message(
-            json.dumps(order_payload),
-            visibility_timeout=15  # delay notification
-        )
-        logging.info("Enqueued order notification for order %s", order_payload.get("orderNumber"))
-    except Exception as queue_error:
-        logging.error("Failed to enqueue notification: %s", queue_error)
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -87,15 +29,31 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Parse request body
         req_body = req.get_json()
         
-        # Validate required fields (treat missing or empty values as invalid)
+        # Validate required fields
         required_fields = ['customerName', 'deliveryAddress', 'area', 'meals']
-        missing_fields = [field for field in required_fields if not req_body.get(field)]
+        missing_fields = []
+        for field in required_fields:
+            if field not in req_body:
+                missing_fields.append(field)
         
         if missing_fields:
-            _send_invalid_order(
-                reason=f"Missing required fields: {', '.join(missing_fields)}",
-                order_payload=req_body
-            )
+            # Send to invalid orders queue (advanced feature)
+            try:
+                connection_string = os.getenv('AzureStorageConnectionString') or os.getenv('AzureWebJobsStorage')
+                queue_client = QueueClient.from_connection_string(
+                    connection_string,
+                    queue_name="invalid-orders"
+                )
+                
+                invalid_order = {
+                    'orderData': req_body,
+                    'error': f"Missing fields: {', '.join(missing_fields)}",
+                    'timestamp': datetime.utcnow().isoformat()
+                }
+                queue_client.send_message(json.dumps(invalid_order))
+                logging.info(f"Sent invalid order to queue: {', '.join(missing_fields)}")
+            except Exception as queue_error:
+                logging.error(f"Failed to send to queue: {queue_error}")
             
             return func.HttpResponse(
                 json.dumps({
@@ -112,13 +70,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         
         # Validate meals array
         if not isinstance(req_body['meals'], list) or len(req_body['meals']) == 0:
-            reason = "Meals must be a non-empty array"
-            _send_invalid_order(reason=reason, order_payload=req_body)
-            
             return func.HttpResponse(
                 json.dumps({
                     'status': 'error',
-                    'message': reason
+                    'message': "Meals must be a non-empty array"
                 }),
                 status_code=400,
                 mimetype="application/json",
@@ -129,7 +84,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
         
         # Get connection string
-        connection_string = _get_storage_connection_string()
+        connection_string = os.getenv('AzureStorageConnectionString')
+        if not connection_string:
+            connection_string = os.getenv('AzureWebJobsStorage')
         
         # Connect to Table Storage
         table_service = TableServiceClient.from_connection_string(connection_string)
@@ -207,18 +164,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         
         # Save to Orders table
         orders_table.create_entity(order_entity)
-
-        # Queue a notification to be sent after a short delay
-        notification_message = {
-            'orderId': order_id,
-            'orderNumber': order_number,
-            'customerName': req_body['customerName'],
-            'area': req_body['area'],
-            'status': 'Preparing',
-            'message': f"Your order {order_number} is being prepared.",
-            'timestamp': datetime.utcnow().isoformat()
-        }
-        _enqueue_preparing_notification(notification_message)
         
         # Return success response
         return func.HttpResponse(
