@@ -165,6 +165,30 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # Save to Orders table
         orders_table.create_entity(order_entity)
         
+        # Send notification to queue (15 second delay handled by notifyorder function)
+        try:
+            notification_queue = QueueClient.from_connection_string(
+                connection_string,
+                queue_name="order-notifications"
+            )
+            
+            notification_payload = {
+                'orderId': order_id,
+                'orderNumber': order_number,
+                'customerName': req_body['customerName'],
+                'area': req_body['area'],
+                'status': 'Preparing',
+                'message': f"Your order {order_number} is being prepared!"
+            }
+            
+            notification_queue.send_message(
+                json.dumps(notification_payload),
+                visibility_timeout=15
+            )
+            logging.info(f"Notification queued for order {order_number}")
+        except Exception as notification_error:
+            logging.warning(f"Failed to queue notification: {notification_error}")
+        
         # Return success response
         return func.HttpResponse(
             json.dumps({
