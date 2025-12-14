@@ -115,7 +115,12 @@ The platform supports:
 
 ## 👥 Team Information
 
-[Add team member names and responsibilities here]
+Member 1 - Amit Mayer: 16% - worked on the azure functions and assisted on the web's backend
+Member 2 - Matheus Funabashi: 16% - worked on the azure functions and assisted on the web's backend
+Member 3 - Sami Droubi: 20% - implemented azure functions into the backend and connected the azure tables to the orders recorded
+Member 4 - Hadi: 16% - worked on the frontend and presentation of the project
+Member 5: Ralph de Catalan: 16% - worked on the frontend and presentation of the project
+Member 6: Ruben Penning: 16% - worked on the backend (registering orders, registering new meals)
 
 ## 📝 API Endpoints
 
