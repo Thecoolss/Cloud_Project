@@ -1,3 +1,250 @@
-<h1>
-Welcome to My Website
-</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodExpress | Order Food Online</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>FoodExpress</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="active"><i class="fas fa-home"></i> Customer</a>
+                <a href="restaurant.html"><i class="fas fa-store"></i> Restaurant</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <h1>Craving something delicious?</h1>
+            <p>Order from the best restaurants in your area</p>
+            
+            <!-- Area Selector -->
+            <div class="area-selector">
+                <select id="deliveryArea" class="dropdown">
+                    <option value="">Choose your delivery area...</option>
+                    <option value="Central">Central District</option>
+                    <option value="North">North Side</option>
+                    <option value="South">South Side</option>
+                    <option value="East">East End</option>
+                    <option value="West">West Side</option>
+                </select>
+                <button id="findMealsBtn" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Find Meals
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Loading meals...
+        </div>
+
+        <!-- Meals Display Area -->
+        <div id="mealsSection" class="meals-section" style="display: none;">
+            <div class="section-header">
+                <h2>Available Meals in <span id="currentArea">Your Area</span></h2>
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cartCount">0</span> items | $<span id="cartTotalPreview">0.00</span>
+                </div>
+            </div>
+            
+            <div id="mealsGrid" class="meals-grid">
+                <!-- Meals will be loaded here dynamically -->
+            </div>
+            
+            <div class="no-meals" id="noMealsMessage" style="display: none;">
+                <i class="fas fa-utensils"></i>
+                <h3>No meals available in this area</h3>
+                <p>Try selecting a different delivery area</p>
+            </div>
+        </div>
+
+        <!-- Shopping Cart Sidebar -->
+        <div id="cartSidebar" class="cart-sidebar">
+            <div class="cart-header">
+                <h3><i class="fas fa-shopping-cart"></i> Your Order</h3>
+                <button id="closeCartBtn" class="btn-icon"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div id="cartItems" class="cart-items">
+                <!-- Cart items will appear here -->
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-basket"></i>
+                    <p>Your cart is empty</p>
+                    <p>Add some delicious meals!</p>
+                </div>
+            </div>
+            
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Subtotal:</span>
+                    <span id="cartSubtotal">$0.00</span>
+                </div>
+                <div class="cart-total">
+                    <span>Delivery Fee:</span>
+                    <span id="deliveryFee">$2.99</span>
+                </div>
+                <div class="cart-total grand-total">
+                    <span>Total:</span>
+                    <span id="cartTotal">$2.99</span>
+                </div>
+                
+                <button id="checkoutBtn" class="btn btn-success btn-block" disabled>
+                    <i class="fas fa-check"></i> Proceed to Checkout
+                </button>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div id="checkoutModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-user"></i> Delivery Details</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                
+                <form id="orderForm" class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">Full Name *</label>
+                            <input type="text" id="customerName" required placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number *</label>
+                            <input type="tel" id="phoneNumber" required placeholder="Enter your phone number">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deliveryAddress">Delivery Address *</label>
+                        <textarea id="deliveryAddress" rows="3" required placeholder="Enter complete delivery address"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specialInstructions">Special Instructions (Optional)</label>
+                        <textarea id="specialInstructions" rows="2" placeholder="Any special instructions for delivery"></textarea>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h3><i class="fas fa-receipt"></i> Order Summary</h3>
+                        <div id="orderSummary">
+                            <!-- Order items will be added here -->
+                        </div>
+                        <div class="order-total">
+                            <span>Total:</span>
+                            <span id="orderTotal">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="backToCartBtn" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Cart
+                        </button>
+                        <button type="submit" id="submitOrderBtn" class="btn btn-success">
+                            <i class="fas fa-paper-plane"></i> Place Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Confirmation Modal -->
+        <div id="confirmationModal" class="modal">
+            <div class="modal-content confirmation-modal">
+                <div class="modal-body">
+                    <div class="confirmation-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2>Order Confirmed!</h2>
+                    <p class="confirmation-message">Your order has been received and is being prepared.</p>
+                    
+                    <div class="confirmation-details">
+                        <div class="detail-item">
+                            <i class="fas fa-receipt"></i>
+                            <div>
+                                <h4>Order Number</h4>
+                                <p id="orderNumber">ORD-123456</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h4>Estimated Delivery</h4>
+                                <p id="deliveryTime">45 minutes</p>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <div>
+                                <h4>Total Amount</h4>
+                                <p id="orderTotalAmount">$29.99</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="confirmation-note">
+                        <i class="fas fa-info-circle"></i>
+                        <p>You'll receive updates about your order status. Thank you for ordering with FoodExpress!</p>
+                    </div>
+                    
+                    <button id="newOrderBtn" class="btn btn-primary btn-block">
+                        <i class="fas fa-plus"></i> Place New Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Toggle Button -->
+    <button id="cartToggleBtn" class="cart-toggle-btn">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cartBadge" class="cart-badge">0</span>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-utensils"></i> FoodExpress</h3>
+                    <p>Your favorite food, delivered fast</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="index.html">Customer Portal</a>
+                    <a href="restaurant.html">Restaurant Portal</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Delivery Areas</h4>
+                    <p>Central • North • South • East • West</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 FoodExpress - Cloud Computing Project</p>
+                <p class="tech-badge">
+                    <i class="fas fa-cloud"></i> Powered by Azure Functions & Storage
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/customer.js"></script>
+</body>
+</html>
