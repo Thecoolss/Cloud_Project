@@ -1,0 +1,4 @@
+azure-functions
+azure-data-tables>=12.4.4
+azure-storage-queue>=12.5.0
+python-dotenv

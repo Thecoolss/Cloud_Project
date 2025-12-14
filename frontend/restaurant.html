@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodExpress | Restaurant Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>FoodExpress</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html"><i class="fas fa-home"></i> Customer</a>
+                <a href="restaurant.html" class="active"><i class="fas fa-store"></i> Restaurant</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Restaurant Header -->
+    <header class="restaurant-header">
+        <div class="container">
+            <div class="header-content">
+                <h1><i class="fas fa-store-alt"></i> Restaurant Portal</h1>
+                <p>Register your meals and reach more customers</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Restaurant Dashboard -->
+        <div class="restaurant-dashboard">
+            <!-- Left Column: Registration Form -->
+            <div class="dashboard-left">
+                <div class="registration-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-plus-circle"></i> Register New Meal</h2>
+                        <p>Fill in the details to add a new meal to our platform</p>
+                    </div>
+                    
+                    <form id="mealForm" class="meal-form">
+                        <!-- Meal Information -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-info-circle"></i> Meal Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealName"><i class="fas fa-utensil-spoon"></i> Meal Name *</label>
+                                    <input type="text" id="mealName" required placeholder="e.g., Spaghetti Carbonara">
+                                </div>
+                                <div class="form-group">
+                                    <label for="restaurantName"><i class="fas fa-store"></i> Restaurant Name *</label>
+                                    <input type="text" id="restaurantName" required placeholder="Your restaurant name">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="mealDescription"><i class="fas fa-align-left"></i> Description *</label>
+                                <textarea id="mealDescription" rows="3" required placeholder="Describe your meal..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing & Details -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-tag"></i> Pricing & Details</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mealPrice"><i class="fas fa-dollar-sign"></i> Price ($) *</label>
+                                    <input type="number" id="mealPrice" step="0.01" min="0" required placeholder="15.99">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prepTime"><i class="fas fa-clock"></i> Prep Time (min) *</label>
+                                    <input type="number" id="prepTime" min="1" required placeholder="25">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mealCategory"><i class="fas fa-filter"></i> Category *</label>
+                                    <select id="mealCategory" required>
+                                        <option value="">Select category</option>
+                                        <option value="Main Course">Main Course</option>
+                                        <option value="Appetizer">Appetizer</option>
+                                        <option value="Dessert">Dessert</option>
+                                        <option value="Beverage">Beverage</option>
+                                        <option value="Side Dish">Side Dish</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Areas -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-map-marker-alt"></i> Delivery Areas *</h3>
+                            <p>Select areas where you can deliver this meal:</p>
+                            <div class="areas-container">
+                                <label class="area-checkbox">
+                                    <input type="checkbox" name="deliveryArea" value="Central">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-label">Central</span>
+                                </label>
+                                <label class="area-checkbox">
+                                    <input type="checkbox" name="deliveryArea" value="North">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-label">North</span>
+                                </label>
+                                <label class="area-checkbox">
+                                    <input type="checkbox" name="deliveryArea" value="South">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-label">South</span>
+                                </label>
+                                <label class="area-checkbox">
+                                    <input type="checkbox" name="deliveryArea" value="East">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-label">East</span>
+                                </label>
+                                <label class="area-checkbox">
+                                    <input type="checkbox" name="deliveryArea" value="West">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-label">West</span>
+                                </label>
+                            </div>
+                            <p class="form-hint">Select at least one area</p>
+                        </div>
+                        
+                        <!-- Additional Options -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-cog"></i> Additional Options</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="isVegetarian">
+                                        <input type="checkbox" id="isVegetarian">
+                                        <span>Vegetarian</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="isAvailable">
+                                        <input type="checkbox" id="isAvailable" checked>
+                                        <span>Available for ordering</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="calories"><i class="fas fa-fire"></i> Calories (Optional)</label>
+                                <input type="number" id="calories" min="0" placeholder="Estimated calories">
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Clear Form
+                            </button>
+                            <button type="submit" class="btn btn-success" id="submitMealBtn">
+                                <i class="fas fa-save"></i> Register Meal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Right Column: Registered Meals -->
+            <div class="dashboard-right">
+                <div class="registered-meals-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list"></i> Registered Meals</h2>
+                        <div class="stats">
+                            <span id="mealsCount">0</span> meals registered
+                        </div>
+                    </div>
+                    
+                    <div class="meals-filters">
+                        <input type="text" id="mealSearch" placeholder="Search meals...">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="Main Course">Main Course</option>
+                            <option value="Appetizer">Appetizer</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Beverage">Beverage</option>
+                            <option value="Side Dish">Side Dish</option>
+                        </select>
+                    </div>
+                    
+                    <div id="registeredMeals" class="meals-list">
+                        <!-- Meals will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-utensils"></i>
+                            <h3>No meals registered yet</h3>
+                            <p>Register your first meal using the form on the left</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content success-modal">
+            <div class="modal-body">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Meal Registered Successfully!</h2>
+                <p>Your meal has been added to the platform and is now visible to customers.</p>
+                
+                <div class="success-details">
+                    <div class="detail-item">
+                        <span class="label">Meal Name:</span>
+                        <span id="successMealName" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Meal ID:</span>
+                        <span id="successMealId" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Category:</span>
+                        <span id="successMealCategory" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Price:</span>
+                        <span id="successMealPrice" class="value">-</span>
+                    </div>
+                </div>
+                
+                <div class="success-actions">
+                    <button id="viewMealsBtn" class="btn btn-primary">
+                        <i class="fas fa-list"></i> View All Meals
+                    </button>
+                    <button id="addAnotherBtn" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> Add Another Meal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-utensils"></i> FoodExpress</h3>
+                    <p>Partner dashboard for restaurants</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="index.html">Customer Portal</a>
+                    <a href="restaurant.html">Restaurant Portal</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <p>Need help? Contact platform support</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 FoodExpress - Cloud Computing Project</p>
+                <p class="tech-badge">
+                    <i class="fas fa-cloud"></i> Powered by Azure Table & Blob Storage
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/api.js"></script>
+    <script src="js/restaurant.js"></script>
+</body>
+</html>
