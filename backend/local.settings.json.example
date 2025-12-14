@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureStorageConnectionString": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AZURE_NOTIFICATION_HUB_CONNECTION_STRING": "<notification-hub-connection-string>",
+    "AZURE_NOTIFICATION_HUB_NAME": "<notification-hub-name>"
+  },
+  "Host": {
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}
